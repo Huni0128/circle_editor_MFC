@@ -7,6 +7,7 @@
 #include "circle_editor_MFC.h"
 #include "circle_editor_MFCDlg.h"
 #include "afxdialogex.h"
+#include <vector>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -59,12 +60,16 @@ CcircleeditorMFCDlg::CcircleeditorMFCDlg(CWnd* pParent /*=nullptr*/)
 void CcircleeditorMFCDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
+	DDX_Control(pDX, IDC_EDIT_POINT_SIZE, m_editPointSize);
 }
 
 BEGIN_MESSAGE_MAP(CcircleeditorMFCDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_WM_LBUTTONDOWN()
+	ON_EN_CHANGE(IDC_EDIT_POINT_SIZE, &CcircleeditorMFCDlg::OnEnChangeEditPointSize)
+	ON_BN_CLICKED(IDC_BTN_POINT_SIZE, &CcircleeditorMFCDlg::OnBnClickedBtnPointSize)
 END_MESSAGE_MAP()
 
 
@@ -142,7 +147,8 @@ void CcircleeditorMFCDlg::OnPaint()
 	}
 	else
 	{
-		CDialogEx::OnPaint();
+		CPaintDC dc(this);
+		DrawClickPoints(&dc);
 	}
 }
 
@@ -153,3 +159,60 @@ HCURSOR CcircleeditorMFCDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+void CcircleeditorMFCDlg::OnLButtonDown(UINT nFlags, CPoint point)
+{
+	if (IsClickLimitReached())
+		return;
+
+	AddClickPoint(point);
+	Invalidate();
+
+	CDialogEx::OnLButtonDown(nFlags, point);
+}
+
+void CcircleeditorMFCDlg::AddClickPoint(const CPoint& pt)
+{
+	m_vecClickPoints.push_back(pt);
+}
+
+BOOL CcircleeditorMFCDlg::IsClickLimitReached() const
+{
+	return (int)m_vecClickPoints.size() >= m_nMaxPoints;
+}
+
+void CcircleeditorMFCDlg::DrawClickPoints(CDC* pDC)
+{
+	CBrush brush(RGB(0, 0, 0));
+	CBrush* pOldBrush = pDC->SelectObject(&brush);
+
+	for (const auto& pt : m_vecClickPoints)
+	{
+		int r = m_nPointRadius;
+		pDC->Ellipse(pt.x - r, pt.y - r, pt.x + r, pt.y + r);
+	}
+
+	pDC->SelectObject(pOldBrush);
+}
+
+void CcircleeditorMFCDlg::OnEnChangeEditPointSize()
+{
+
+}
+
+void CcircleeditorMFCDlg::OnBnClickedBtnPointSize()
+{
+	CString strInput;
+	m_editPointSize.GetWindowTextW(strInput);
+
+	int nRadius = _ttoi(strInput);
+
+	if (nRadius > 0 && nRadius < 100)
+	{
+		m_nPointRadius = nRadius;
+		Invalidate();
+	}
+	else
+	{
+		AfxMessageBox(_T("1~99 사이의 숫자를 입력하세요."));
+	}
+}

@@ -3,11 +3,16 @@
 //
 
 #pragma once
-
+#include <vector>
 
 // CcircleeditorMFCDlg 대화 상자
 class CcircleeditorMFCDlg : public CDialogEx
 {
+private:
+	CEdit m_editPointSize;
+	int m_nPointRadius = 5;
+	std::vector<CPoint> m_vecClickPoints;
+	int m_nMaxPoints = 3;
 // 생성입니다.
 public:
 	CcircleeditorMFCDlg(CWnd* pParent = nullptr);	// 표준 생성자입니다.
@@ -30,5 +35,12 @@ protected:
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
-	DECLARE_MESSAGE_MAP()
+	DECLARE_MESSAGE_MAP();
+public:
+	afx_msg void OnEnChangeEditPointSize();
+	afx_msg void OnBnClickedBtnPointSize();
+	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
+	void AddClickPoint(const CPoint& pt);
+	BOOL IsClickLimitReached() const;
+	void DrawClickPoints(CDC* pDC);
 };
