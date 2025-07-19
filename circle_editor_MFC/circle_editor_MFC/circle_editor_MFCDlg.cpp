@@ -7,12 +7,11 @@
 #include "circle_editor_MFC.h"
 #include "circle_editor_MFCDlg.h"
 #include "afxdialogex.h"
-#include <vector>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
+#pragma comment(linker, "/entry:WinMainCRTStartup /subsystem:console")
 #endif
-
 
 // 응용 프로그램 정보에 사용되는 CAboutDlg 대화 상자입니다.
 
@@ -46,10 +45,7 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
 END_MESSAGE_MAP()
 
-
 // CcircleeditorMFCDlg 대화 상자
-
-
 
 CcircleeditorMFCDlg::CcircleeditorMFCDlg(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_CIRCLE_EDITOR_MFC_DIALOG, pParent)
@@ -68,7 +64,6 @@ BEGIN_MESSAGE_MAP(CcircleeditorMFCDlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	ON_WM_LBUTTONDOWN()
-	ON_EN_CHANGE(IDC_EDIT_POINT_SIZE, &CcircleeditorMFCDlg::OnEnChangeEditPointSize)
 	ON_BN_CLICKED(IDC_BTN_POINT_SIZE, &CcircleeditorMFCDlg::OnBnClickedBtnPointSize)
 END_MESSAGE_MAP()
 
@@ -104,7 +99,8 @@ BOOL CcircleeditorMFCDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// 큰 아이콘을 설정합니다.
 	SetIcon(m_hIcon, FALSE);		// 작은 아이콘을 설정합니다.
 
-	// TODO: 여기에 추가 초기화 작업을 추가합니다.
+	m_pDrawMgr = new DrawManager(&m_pointMgr);
+	m_pDrawMgr->SetPointRadius(m_nPointRadius);
 
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
@@ -148,7 +144,8 @@ void CcircleeditorMFCDlg::OnPaint()
 	else
 	{
 		CPaintDC dc(this);
-		DrawClickPoints(&dc);
+		if (m_pDrawMgr)
+			m_pDrawMgr->Draw(&dc);
 	}
 }
 
@@ -159,56 +156,26 @@ HCURSOR CcircleeditorMFCDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
-void CcircleeditorMFCDlg::OnLButtonDown(UINT nFlags, CPoint point)
+void CcircleeditorMFCDlg::OnLButtonDown(UINT nFlags, CPoint ptClick)
 {
-	if (IsClickLimitReached())
-		return;
-
-	AddClickPoint(point);
-	Invalidate();
-
-	CDialogEx::OnLButtonDown(nFlags, point);
-}
-
-void CcircleeditorMFCDlg::AddClickPoint(const CPoint& pt)
-{
-	m_vecClickPoints.push_back(pt);
-}
-
-BOOL CcircleeditorMFCDlg::IsClickLimitReached() const
-{
-	return (int)m_vecClickPoints.size() >= m_nMaxPoints;
-}
-
-void CcircleeditorMFCDlg::DrawClickPoints(CDC* pDC)
-{
-	CBrush brush(RGB(0, 0, 0));
-	CBrush* pOldBrush = pDC->SelectObject(&brush);
-
-	for (const auto& pt : m_vecClickPoints)
+	if (!m_pointMgr.IsFull(3))
 	{
-		int r = m_nPointRadius;
-		pDC->Ellipse(pt.x - r, pt.y - r, pt.x + r, pt.y + r);
+		m_pointMgr.AddPoint(ptClick);
+		Invalidate();
 	}
-
-	pDC->SelectObject(pOldBrush);
-}
-
-void CcircleeditorMFCDlg::OnEnChangeEditPointSize()
-{
-
+	CDialogEx::OnLButtonDown(nFlags, ptClick);
 }
 
 void CcircleeditorMFCDlg::OnBnClickedBtnPointSize()
 {
-	CString strInput;
-	m_editPointSize.GetWindowTextW(strInput);
-
-	int nRadius = _ttoi(strInput);
-
-	if (nRadius > 0 && nRadius < 100)
+	CString str;
+	m_editPointSize.GetWindowTextW(str);
+	int r = _ttoi(str);
+	if (r > 0 && r < 100)
 	{
-		m_nPointRadius = nRadius;
+		m_nPointRadius = r;
+		if (m_pDrawMgr)
+			m_pDrawMgr->SetPointRadius(m_nPointRadius);
 		Invalidate();
 	}
 	else
@@ -216,3 +183,5 @@ void CcircleeditorMFCDlg::OnBnClickedBtnPointSize()
 		AfxMessageBox(_T("1~99 사이의 숫자를 입력하세요."));
 	}
 }
+
+

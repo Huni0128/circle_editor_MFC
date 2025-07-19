@@ -3,30 +3,36 @@
 //
 
 #pragma once
-#include <vector>
+
+#include "PointManager.h"
+#include "DrawManager.h"
+#include "CircleUtils.h"
+#include <afxwin.h>
+#include <afxdlgs.h>
 
 // CcircleeditorMFCDlg 대화 상자
 class CcircleeditorMFCDlg : public CDialogEx
 {
 private:
 	CEdit m_editPointSize;
+	PointManager m_pointMgr;
+	DrawManager* m_pDrawMgr = nullptr;
+
 	int m_nPointRadius = 5;
-	std::vector<CPoint> m_vecClickPoints;
-	int m_nMaxPoints = 3;
-// 생성입니다.
+
+	// 생성입니다.
 public:
 	CcircleeditorMFCDlg(CWnd* pParent = nullptr);	// 표준 생성자입니다.
 
-// 대화 상자 데이터입니다.
+	// 대화 상자 데이터입니다.
 #ifdef AFX_DESIGN_TIME
 	enum { IDD = IDD_CIRCLE_EDITOR_MFC_DIALOG };
 #endif
 
-	protected:
+protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV 지원입니다.
 
-
-// 구현입니다.
+	// 구현입니다.
 protected:
 	HICON m_hIcon;
 
@@ -37,10 +43,6 @@ protected:
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP();
 public:
-	afx_msg void OnEnChangeEditPointSize();
 	afx_msg void OnBnClickedBtnPointSize();
-	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
-	void AddClickPoint(const CPoint& pt);
-	BOOL IsClickLimitReached() const;
-	void DrawClickPoints(CDC* pDC);
+	afx_msg void OnLButtonDown(UINT nFlags, CPoint ptClick);
 };
