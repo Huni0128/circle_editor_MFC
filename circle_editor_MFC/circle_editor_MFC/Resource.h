@@ -12,6 +12,8 @@
 #define IDC_EDIT_THICKNESS_SIZE         1003
 #define IDC_BTN_THICKNESS               1004
 #define IDC_BTN_RESET                   1005
+#define IDC_BTN_THICKNESS2              1006
+#define IDC_BTN_RANDOM                  1006
 
 // Next default values for new objects
 // 

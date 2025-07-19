@@ -70,6 +70,7 @@ BEGIN_MESSAGE_MAP(CcircleeditorMFCDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BTN_RESET, &CcircleeditorMFCDlg::OnBnClickedBtnReset)
 	ON_WM_LBUTTONUP()
 	ON_WM_MOUSEMOVE()
+	ON_BN_CLICKED(IDC_BTN_RANDOM, &CcircleeditorMFCDlg::OnBnClickedBtnRandom)
 END_MESSAGE_MAP()
 
 
@@ -103,6 +104,8 @@ BOOL CcircleeditorMFCDlg::OnInitDialog()
 	//  프레임워크가 이 작업을 자동으로 수행합니다.
 	SetIcon(m_hIcon, TRUE);			// 큰 아이콘을 설정합니다.
 	SetIcon(m_hIcon, FALSE);		// 작은 아이콘을 설정합니다.
+
+	srand(static_cast<unsigned>(time(nullptr)));
 
 	m_pDrawMgr = new DrawManager(&m_pointMgr);
 
@@ -244,4 +247,25 @@ void CcircleeditorMFCDlg::OnMouseMove(UINT nFlags, CPoint ptCursor)
 		Invalidate();
 	}
 	CDialogEx::OnMouseMove(nFlags, ptCursor);
+}
+
+void CcircleeditorMFCDlg::OnBnClickedBtnRandom()
+{
+	if (!m_pointMgr.IsFull(3))
+	{
+		AfxMessageBox(_T("3개의 점을 모두 찍은 후에 랜덤 이동을 실행하세요."));
+		return;
+	}
+
+	CRect rcClient;
+	GetClientRect(&rcClient);
+
+	for (int nIdx = 0; nIdx < 3; ++nIdx)
+	{
+		int nX = rcClient.left + (rand() % rcClient.Width());
+		int nY = rcClient.top + (rand() % rcClient.Height());
+		m_pointMgr.MovePoint(nIdx, CPoint(nX, nY));
+	}
+
+	Invalidate();
 }

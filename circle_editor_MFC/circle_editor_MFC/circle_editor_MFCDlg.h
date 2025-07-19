@@ -48,4 +48,5 @@ public:
 	afx_msg void OnBnClickedBtnReset();
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
+	afx_msg void OnBnClickedBtnRandom();
 };
