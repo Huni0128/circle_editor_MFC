@@ -68,6 +68,8 @@ BEGIN_MESSAGE_MAP(CcircleeditorMFCDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BTN_POINT_SIZE, &CcircleeditorMFCDlg::OnBnClickedBtnPointSize)
 	ON_BN_CLICKED(IDC_BTN_THICKNESS, &CcircleeditorMFCDlg::OnBnClickedBtnThickness)
 	ON_BN_CLICKED(IDC_BTN_RESET, &CcircleeditorMFCDlg::OnBnClickedBtnReset)
+	ON_WM_LBUTTONUP()
+	ON_WM_MOUSEMOVE()
 END_MESSAGE_MAP()
 
 
@@ -167,11 +169,17 @@ HCURSOR CcircleeditorMFCDlg::OnQueryDragIcon()
 
 void CcircleeditorMFCDlg::OnLButtonDown(UINT nFlags, CPoint ptClick)
 {
-	if (!m_pointMgr.IsFull(3))
+	m_nDragIndex = m_pointMgr.HitTest(ptClick, m_pDrawMgr->GetPointRadius());
+	if (m_nDragIndex >= 0)
+	{
+		SetCapture();
+	}
+	else if (!m_pointMgr.IsFull(3))
 	{
 		m_pointMgr.AddPoint(ptClick);
 		Invalidate();
 	}
+
 	CDialogEx::OnLButtonDown(nFlags, ptClick);
 }
 
@@ -216,4 +224,24 @@ void CcircleeditorMFCDlg::OnBnClickedBtnReset()
 		m_pointMgr.Clear();
 		Invalidate();
 	}
+}
+
+void CcircleeditorMFCDlg::OnLButtonUp(UINT nFlags, CPoint ptClickUp)
+{
+	if (m_nDragIndex >= 0)
+	{
+		ReleaseCapture();
+		m_nDragIndex = -1;
+	}
+	CDialogEx::OnLButtonUp(nFlags, ptClickUp);
+}
+
+void CcircleeditorMFCDlg::OnMouseMove(UINT nFlags, CPoint ptCursor)
+{
+	if (m_nDragIndex >= 0)
+	{
+		m_pointMgr.MovePoint(m_nDragIndex, ptCursor);
+		Invalidate();
+	}
+	CDialogEx::OnMouseMove(nFlags, ptCursor);
 }

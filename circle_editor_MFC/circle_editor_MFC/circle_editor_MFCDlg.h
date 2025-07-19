@@ -18,6 +18,7 @@ private:
 	PointManager m_pointMgr;
 	DrawManager* m_pDrawMgr = nullptr;
 
+	int m_nDragIndex = -1;
 	// 생성입니다.
 public:
 	CcircleeditorMFCDlg(CWnd* pParent = nullptr);	// 표준 생성자입니다.
@@ -45,4 +46,6 @@ public:
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint ptClick);
 	afx_msg void OnBnClickedBtnThickness();
 	afx_msg void OnBnClickedBtnReset();
+	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
+	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 };
