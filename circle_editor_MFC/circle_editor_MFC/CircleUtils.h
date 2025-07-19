@@ -1,9 +1,11 @@
 #pragma once
 #include <atltypes.h>
 
-class CircleUtils {
+class CircleUtils 
+{
 public:
-    struct Circle {
+    struct Circle 
+    {
         CPoint ptCenter;
         float fRadius = 0.f;
         bool bValid = false;

@@ -11,6 +11,7 @@ CircleUtils::Circle CircleUtils::Calculate(const CPoint& A, const CPoint& B, con
     double dCx = C.x, dCy = C.y;
 
     double D = 2 * (dAx * (dBy - dCy) + dBx * (dCy - dAy) + dCx * (dAy - dBy));
+
     if (D == 0.0)
         return result;
 

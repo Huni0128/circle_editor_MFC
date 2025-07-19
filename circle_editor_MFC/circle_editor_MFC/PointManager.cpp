@@ -19,7 +19,8 @@ const std::vector<CPoint>& PointManager::GetPoints() const
 
 int PointManager::HitTest(CPoint ptTest, int nRadius)
 {
-    for (int i = 0; i < m_vecPoints.size(); ++i) {
+    for (int i = 0; i < m_vecPoints.size(); ++i) 
+    {
         if (abs(m_vecPoints[i].x - ptTest.x) <= nRadius &&
             abs(m_vecPoints[i].y - ptTest.y) <= nRadius)
             return i;
