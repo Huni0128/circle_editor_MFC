@@ -67,6 +67,7 @@ BEGIN_MESSAGE_MAP(CcircleeditorMFCDlg, CDialogEx)
 	ON_WM_LBUTTONDOWN()
 	ON_BN_CLICKED(IDC_BTN_POINT_SIZE, &CcircleeditorMFCDlg::OnBnClickedBtnPointSize)
 	ON_BN_CLICKED(IDC_BTN_THICKNESS, &CcircleeditorMFCDlg::OnBnClickedBtnThickness)
+	ON_BN_CLICKED(IDC_BTN_RESET, &CcircleeditorMFCDlg::OnBnClickedBtnReset)
 END_MESSAGE_MAP()
 
 
@@ -208,3 +209,11 @@ void CcircleeditorMFCDlg::OnBnClickedBtnThickness()
 	}
 }
 
+void CcircleeditorMFCDlg::OnBnClickedBtnReset()
+{
+	if (AfxMessageBox(_T("RESET하시겠습니까?"), MB_YESNO | MB_ICONQUESTION) == IDYES)
+	{
+		m_pointMgr.Clear();
+		Invalidate();
+	}
+}

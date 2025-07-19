@@ -9,9 +9,9 @@
 #define IDR_MAINFRAME                   128
 #define IDC_EDIT_POINT_SIZE             1001
 #define IDC_BTN_POINT_SIZE              1002
-#define IDC_EDIT_POINT_SIZE2            1003
 #define IDC_EDIT_THICKNESS_SIZE         1003
 #define IDC_BTN_THICKNESS               1004
+#define IDC_BTN_RESET                   1005
 
 // Next default values for new objects
 // 

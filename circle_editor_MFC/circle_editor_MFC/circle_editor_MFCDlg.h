@@ -44,4 +44,5 @@ public:
 	afx_msg void OnBnClickedBtnPointSize();
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint ptClick);
 	afx_msg void OnBnClickedBtnThickness();
+	afx_msg void OnBnClickedBtnReset();
 };
