@@ -46,7 +46,8 @@ public:
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint ptClick);
 	afx_msg void OnBnClickedBtnThickness();
 	afx_msg void OnBnClickedBtnReset();
-	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
-	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
+	afx_msg void OnLButtonUp(UINT nFlags, CPoint ptClickUp);
+	afx_msg void OnMouseMove(UINT nFlags, CPoint ptCursor);
 	afx_msg void OnBnClickedBtnRandom();
+	afx_msg void OnDestroy();
 };

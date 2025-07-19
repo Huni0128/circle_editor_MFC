@@ -7,6 +7,7 @@
 #include "circle_editor_MFC.h"
 #include "circle_editor_MFCDlg.h"
 #include "afxdialogex.h"
+#include <atltime.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -109,10 +110,16 @@ BOOL CcircleeditorMFCDlg::OnInitDialog()
 
 	m_pDrawMgr = new DrawManager(&m_pointMgr);
 
+	CRect rc;
+	GetClientRect(&rc);
+	m_pDrawMgr->CreateImage(rc.Width(), rc.Height(), 8);
+	m_pDrawMgr->UpdateBuffer();
+
+	Invalidate();
+
 	CString tmp;
 	tmp.Format(_T("%d"), m_pDrawMgr->GetPointRadius());
 	m_editPointSize.SetWindowTextW(tmp);
-
 	tmp.Format(_T("%d"), m_pDrawMgr->GetCircleThickness());
 	m_editCircleThickness.SetWindowTextW(tmp);
 
@@ -158,8 +165,8 @@ void CcircleeditorMFCDlg::OnPaint()
 	else
 	{
 		CPaintDC dc(this);
-		if (m_pDrawMgr)
-			m_pDrawMgr->Draw(&dc);
+		m_pDrawMgr->UpdateBuffer();
+		m_pDrawMgr->GetImage().Draw(dc, 0, 0);
 	}
 }
 
@@ -180,6 +187,7 @@ void CcircleeditorMFCDlg::OnLButtonDown(UINT nFlags, CPoint ptClick)
 	else if (!m_pointMgr.IsFull(3))
 	{
 		m_pointMgr.AddPoint(ptClick);
+		m_pDrawMgr->UpdateBuffer();
 		Invalidate();
 	}
 
@@ -243,7 +251,7 @@ void CcircleeditorMFCDlg::OnMouseMove(UINT nFlags, CPoint ptCursor)
 {
 	if (m_nDragIndex >= 0)
 	{
-		m_pointMgr.MovePoint(m_nDragIndex, ptCursor);
+		m_pDrawMgr->UpdateBuffer();
 		Invalidate();
 	}
 	CDialogEx::OnMouseMove(nFlags, ptCursor);
@@ -259,13 +267,26 @@ void CcircleeditorMFCDlg::OnBnClickedBtnRandom()
 
 	CRect rcClient;
 	GetClientRect(&rcClient);
+	int width = rcClient.Width();
+	int height = rcClient.Height();
+	int r = m_pDrawMgr->GetPointRadius();
+
+	int minX = r, maxX = max(r, width - r);
+	int minY = r, maxY = max(r, height - r);
 
 	for (int nIdx = 0; nIdx < 3; ++nIdx)
 	{
-		int nX = rcClient.left + (rand() % rcClient.Width());
-		int nY = rcClient.top + (rand() % rcClient.Height());
+		int nX = rand() % (maxX - minX + 1) + minX;
+		int nY = rand() % (maxY - minY + 1) + minY;
 		m_pointMgr.MovePoint(nIdx, CPoint(nX, nY));
 	}
 
+	m_pDrawMgr->UpdateBuffer();
 	Invalidate();
+}
+
+void CcircleeditorMFCDlg::OnDestroy()
+{
+	delete m_pDrawMgr;
+	CDialogEx::OnDestroy();
 }
