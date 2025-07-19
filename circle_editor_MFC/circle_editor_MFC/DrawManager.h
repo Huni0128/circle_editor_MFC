@@ -12,6 +12,9 @@ private:
 public:
     DrawManager(PointManager* mgr);
 
+    int GetPointRadius() const { return m_nPointRadius; }
+    int GetCircleThickness() const { return m_nCircleThickness; }
+
     void SetPointRadius(int nRadius) { m_nPointRadius = nRadius; }
     void SetCircleThickness(int nThickness) { m_nCircleThickness = nThickness; }
 

@@ -1,5 +1,4 @@
-﻿
-// circle_editor_MFCDlg.h: 헤더 파일
+﻿// circle_editor_MFCDlg.h: 헤더 파일
 //
 
 #pragma once
@@ -15,10 +14,9 @@ class CcircleeditorMFCDlg : public CDialogEx
 {
 private:
 	CEdit m_editPointSize;
+	CEdit m_editCircleThickness;
 	PointManager m_pointMgr;
 	DrawManager* m_pDrawMgr = nullptr;
-
-	int m_nPointRadius = 5;
 
 	// 생성입니다.
 public:
@@ -45,4 +43,5 @@ protected:
 public:
 	afx_msg void OnBnClickedBtnPointSize();
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint ptClick);
+	afx_msg void OnBnClickedBtnThickness();
 };

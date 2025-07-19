@@ -57,6 +57,7 @@ void CcircleeditorMFCDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_EDIT_POINT_SIZE, m_editPointSize);
+	DDX_Control(pDX, IDC_EDIT_THICKNESS_SIZE, m_editCircleThickness);
 }
 
 BEGIN_MESSAGE_MAP(CcircleeditorMFCDlg, CDialogEx)
@@ -65,6 +66,7 @@ BEGIN_MESSAGE_MAP(CcircleeditorMFCDlg, CDialogEx)
 	ON_WM_QUERYDRAGICON()
 	ON_WM_LBUTTONDOWN()
 	ON_BN_CLICKED(IDC_BTN_POINT_SIZE, &CcircleeditorMFCDlg::OnBnClickedBtnPointSize)
+	ON_BN_CLICKED(IDC_BTN_THICKNESS, &CcircleeditorMFCDlg::OnBnClickedBtnThickness)
 END_MESSAGE_MAP()
 
 
@@ -100,7 +102,13 @@ BOOL CcircleeditorMFCDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 작은 아이콘을 설정합니다.
 
 	m_pDrawMgr = new DrawManager(&m_pointMgr);
-	m_pDrawMgr->SetPointRadius(m_nPointRadius);
+
+	CString tmp;
+	tmp.Format(_T("%d"), m_pDrawMgr->GetPointRadius());
+	m_editPointSize.SetWindowTextW(tmp);
+
+	tmp.Format(_T("%d"), m_pDrawMgr->GetCircleThickness());
+	m_editCircleThickness.SetWindowTextW(tmp);
 
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
@@ -170,18 +178,33 @@ void CcircleeditorMFCDlg::OnBnClickedBtnPointSize()
 {
 	CString str;
 	m_editPointSize.GetWindowTextW(str);
-	int r = _ttoi(str);
-	if (r > 0 && r < 100)
+	int nRadius = _ttoi(str);
+	if (nRadius > 0 && nRadius <= 30)
 	{
-		m_nPointRadius = r;
 		if (m_pDrawMgr)
-			m_pDrawMgr->SetPointRadius(m_nPointRadius);
+			m_pDrawMgr->SetPointRadius(nRadius);
 		Invalidate();
 	}
 	else
 	{
-		AfxMessageBox(_T("1~99 사이의 숫자를 입력하세요."));
+		AfxMessageBox(_T("1~30 사이의 숫자를 입력하세요."));
 	}
 }
 
+void CcircleeditorMFCDlg::OnBnClickedBtnThickness()
+{
+	CString str;
+	m_editCircleThickness.GetWindowTextW(str);
+	int nThick = _ttoi(str);
+	if (nThick > 0 && nThick <= 30)
+	{
+		if (m_pDrawMgr)
+			m_pDrawMgr->SetCircleThickness(nThick);
+		Invalidate();
+	}
+	else
+	{
+		AfxMessageBox(_T("1~30 사이의 숫자를 입력하세요."));
+	}
+}
 
