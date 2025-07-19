@@ -21,10 +21,12 @@ public:
     void SetCircleThickness(int nThick) noexcept { m_nThickness = nThick; }
 
 private:
-    void DrawFilledCircle(
-        BYTE* pBuf, int nPitch, int nW, int nH, int nX, int nY, int nR, BYTE rGray) noexcept;
+    void DrawPoints(BYTE* pBuf, int nPitch, int nW, int nH) noexcept;
+    void ClearBuffer() noexcept;
+    void DrawCircleRing(
+        BYTE* pBuf, int nPitch, int nW, int nH, int nX,
+        int nY, int nR, int nThickness, BYTE rGray) noexcept;
 
-private:
     PointManager* m_pPointMgr = nullptr;
     int m_nPtRadius = 5;
     int m_nThickness = 2;
