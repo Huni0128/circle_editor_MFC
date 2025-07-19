@@ -13,9 +13,15 @@
 
 # Linker files
 *.ilk
+*.tlog
+*.lastbuildstate
+*.log
+*.VC.db
+*.idb
 
 # Debugger Files
 *.pdb
+*.dwo
 
 # Compiled Dynamic libraries
 *.so
@@ -37,5 +43,28 @@
 *.out
 *.app
 
-# debug information files
-*.dwo
+# Visual Studio settings
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.vcxproj.user
+
+# Build directories
+Debug/
+Release/
+x64/
+ipch/
+
+# MFC/VS resource cache
+*.aps
+
+# Other temp files
+*.tmp
+*.cache
+*.bak
+*.ncb
+*.log
+*.sdf
+*.opensdf
