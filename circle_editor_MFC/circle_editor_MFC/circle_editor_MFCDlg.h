@@ -7,7 +7,8 @@
 #include "DrawManager.h"
 #include "CircleUtils.h"
 #include <afxwin.h>
-#include <afxdlgs.h>
+
+#define WM_USER_RANDOM_UPDATE (WM_USER + 1)
 
 // CcircleeditorMFCDlg 대화 상자
 class CcircleeditorMFCDlg : public CDialogEx
@@ -19,6 +20,7 @@ private:
 	DrawManager* m_pDrawMgr = nullptr;
 
 	int m_nDragIndex = -1;
+
 	// 생성입니다.
 public:
 	CcircleeditorMFCDlg(CWnd* pParent = nullptr);	// 표준 생성자입니다.
@@ -50,4 +52,5 @@ public:
 	afx_msg void OnMouseMove(UINT nFlags, CPoint ptCursor);
 	afx_msg void OnBnClickedBtnRandom();
 	afx_msg void OnDestroy();
+	afx_msg LRESULT OnRandomUpdate(WPARAM wParam, LPARAM lParam);
 };

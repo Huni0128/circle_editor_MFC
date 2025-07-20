@@ -7,9 +7,10 @@
 #include "circle_editor_MFC.h"
 #include "circle_editor_MFCDlg.h"
 #include "afxdialogex.h"
-#include <atltime.h>
-#include <chrono>
 #include <iostream>
+#include <iomanip>
+#include <thread>
+#include <chrono>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -74,6 +75,7 @@ BEGIN_MESSAGE_MAP(CcircleeditorMFCDlg, CDialogEx)
 	ON_WM_LBUTTONUP()
 	ON_WM_MOUSEMOVE()
 	ON_BN_CLICKED(IDC_BTN_RANDOM, &CcircleeditorMFCDlg::OnBnClickedBtnRandom)
+	ON_MESSAGE(WM_USER_RANDOM_UPDATE, &CcircleeditorMFCDlg::OnRandomUpdate)
 END_MESSAGE_MAP()
 
 
@@ -215,13 +217,15 @@ void CcircleeditorMFCDlg::OnBnClickedBtnPointSize()
 
 void CcircleeditorMFCDlg::OnBnClickedBtnThickness()
 {
-	CString str;
-	m_editCircleThickness.GetWindowTextW(str);
-	int nThick = _ttoi(str);
-	if (nThick > 0 && nThick <= 30)
+	CString strInput;
+	m_editCircleThickness.GetWindowTextW(strInput);
+
+	int nThickness = _ttoi(strInput);
+
+	if (nThickness > 0 && nThickness <= 30)
 	{
 		if (m_pDrawMgr)
-			m_pDrawMgr->SetCircleThickness(nThick);
+			m_pDrawMgr->SetCircleThickness(nThickness);
 		Invalidate();
 	}
 	else
@@ -264,41 +268,63 @@ void CcircleeditorMFCDlg::OnBnClickedBtnRandom()
 {
 	if (!m_pointMgr.IsFull(3))
 	{
-		AfxMessageBox(_T("3개의 점을 모두 찍은 후에 랜덤 이동을 실행하세요."));
+		AfxMessageBox(_T("3개의 점을 먼저 찍어주세요."));
 		return;
 	}
 
-	auto t_start = std::chrono::high_resolution_clock::now();
-
-	CRect rcClient;
-	GetClientRect(&rcClient);
-	int width = rcClient.Width();
-	int height = rcClient.Height();
-	int r = m_pDrawMgr->GetPointRadius();
-
-	int minX = r, maxX = max(r, width - r);
-	int minY = r, maxY = max(r, height - r);
-
-	for (int nIdx = 0; nIdx < 3; ++nIdx)
+	AfxBeginThread([](LPVOID lpParam) -> UINT
 	{
-		int nX = rand() % (maxX - minX + 1) + minX;
-		int nY = rand() % (maxY - minY + 1) + minY;
-		m_pointMgr.MovePoint(nIdx, CPoint(nX, nY));
-	}
+		auto pDlg = static_cast<CcircleeditorMFCDlg*>(lpParam);
+		auto tpStartTotal = std::chrono::high_resolution_clock::now();
+		for (int nStep = 0; nStep < 10; ++nStep)
+		{
+			auto tpStartFrame = std::chrono::high_resolution_clock::now();
 
-	m_pDrawMgr->UpdateBuffer();
-	Invalidate();
+			CRect rcClient;
+			pDlg->GetClientRect(&rcClient);
+			int nWidth = rcClient.Width();
+			int nHeight = rcClient.Height();
+			int nRadius = pDlg->m_pDrawMgr->GetPointRadius();
 
-	auto t_end = std::chrono::high_resolution_clock::now();
-	std::chrono::duration<double> elapsed = t_end - t_start;
+			int nMinX = nRadius, nMaxX = max(nRadius, nWidth - nRadius);
+			int nMinY = nRadius, nMaxY = max(nRadius, nHeight - nRadius);
 
-	std::cout << "OnBnClickedBtnRandom 실행 소요 시간: "
-		<< elapsed.count() << "초\n";
+			for (int nIdx = 0; nIdx < 3; ++nIdx)
+			{
+				int nX = rand() % (nMaxX - nMinX + 1) + nMinX;
+				int nY = rand() % (nMaxY - nMinY + 1) + nMinY;
+				pDlg->m_pointMgr.MovePoint(nIdx, CPoint(nX, nY));
+			}
+
+			pDlg->PostMessage(WM_USER_RANDOM_UPDATE);
+
+			auto tpEndFrame = std::chrono::high_resolution_clock::now();
+			double dElapsedSec = std::chrono::duration<double>(tpEndFrame - tpStartFrame).count();
+
+			std::cout << "Random #" << (nStep + 1)
+				<< " 실행 시간: " << std::fixed << std::setprecision(6) << dElapsedSec << "초\n";
+
+			std::this_thread::sleep_for(std::chrono::milliseconds(500));
+		}
+
+		auto tpEndTotal = std::chrono::high_resolution_clock::now();
+		double dTotalSec = std::chrono::duration<double>(tpEndTotal - tpStartTotal).count();
+
+		std::cout << "총 실행 시간: " << std::fixed << std::setprecision(6) << dTotalSec << "초\n";
+
+		return 0;
+	}, this);
 }
-
 
 void CcircleeditorMFCDlg::OnDestroy()
 {
 	delete m_pDrawMgr;
 	CDialogEx::OnDestroy();
+}
+
+LRESULT CcircleeditorMFCDlg::OnRandomUpdate(WPARAM, LPARAM)
+{
+	m_pDrawMgr->UpdateBuffer();
+	Invalidate(FALSE);
+	return 0;
 }
