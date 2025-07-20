@@ -13,7 +13,10 @@
 #define IDC_BTN_THICKNESS               1004
 #define IDC_BTN_RESET                   1005
 #define IDC_BTN_THICKNESS2              1006
-#define IDC_BTN_RANDOM                  1006
+#define IDC_BTN_RANDOM                  1007
+#define IDC_EDIT_POINT1_POSE            1008
+#define IDC_EDIT_POINT2_POSE            1009
+#define IDC_EDIT_POINT3_POSE            1010
 
 // Next default values for new objects
 // 
@@ -21,7 +24,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        130
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1004
+#define _APS_NEXT_CONTROL_VALUE         1011
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

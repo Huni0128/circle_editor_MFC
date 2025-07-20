@@ -8,7 +8,7 @@
 #include "CircleUtils.h"
 #include <afxwin.h>
 
-#define WM_USER_RANDOM_UPDATE (WM_USER + 1)
+#define WM_USER_RANDOM_UPDATE  (WM_USER + 1)
 
 // CcircleeditorMFCDlg 대화 상자
 class CcircleeditorMFCDlg : public CDialogEx
@@ -18,6 +18,9 @@ private:
 	CEdit m_editCircleThickness;
 	PointManager m_pointMgr;
 	DrawManager* m_pDrawMgr = nullptr;
+	CEdit m_editPt1Pose;
+	CEdit m_editPt2Pose;
+	CEdit m_editPt3Pose;
 
 	int m_nDragIndex = -1;
 
@@ -53,4 +56,5 @@ public:
 	afx_msg void OnBnClickedBtnRandom();
 	afx_msg void OnDestroy();
 	afx_msg LRESULT OnRandomUpdate(WPARAM wParam, LPARAM lParam);
+	void UpdatePointPoseDisplays();
 };

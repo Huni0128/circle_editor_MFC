@@ -62,6 +62,11 @@ void CcircleeditorMFCDlg::DoDataExchange(CDataExchange* pDX)
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_EDIT_POINT_SIZE, m_editPointSize);
 	DDX_Control(pDX, IDC_EDIT_THICKNESS_SIZE, m_editCircleThickness);
+	DDX_Control(pDX, IDC_EDIT_POINT_SIZE, m_editPointSize);
+	DDX_Control(pDX, IDC_EDIT_THICKNESS_SIZE, m_editCircleThickness);
+	DDX_Control(pDX, IDC_EDIT_POINT1_POSE, m_editPt1Pose);
+	DDX_Control(pDX, IDC_EDIT_POINT2_POSE, m_editPt2Pose);
+	DDX_Control(pDX, IDC_EDIT_POINT3_POSE, m_editPt3Pose);
 }
 
 BEGIN_MESSAGE_MAP(CcircleeditorMFCDlg, CDialogEx)
@@ -126,6 +131,12 @@ BOOL CcircleeditorMFCDlg::OnInitDialog()
 	m_editPointSize.SetWindowTextW(tmp);
 	tmp.Format(_T("%d"), m_pDrawMgr->GetCircleThickness());
 	m_editCircleThickness.SetWindowTextW(tmp);
+
+	m_editPt1Pose.SetReadOnly(TRUE);
+	m_editPt2Pose.SetReadOnly(TRUE);
+	m_editPt3Pose.SetReadOnly(TRUE);
+
+	UpdatePointPoseDisplays();
 
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
@@ -193,6 +204,7 @@ void CcircleeditorMFCDlg::OnLButtonDown(UINT nFlags, CPoint ptClick)
 		m_pointMgr.AddPoint(ptClick);
 		m_pDrawMgr->UpdateBuffer();
 		Invalidate();
+		UpdatePointPoseDisplays();
 	}
 
 	CDialogEx::OnLButtonDown(nFlags, ptClick);
@@ -239,6 +251,7 @@ void CcircleeditorMFCDlg::OnBnClickedBtnReset()
 	if (AfxMessageBox(_T("RESET하시겠습니까?"), MB_YESNO | MB_ICONQUESTION) == IDYES)
 	{
 		m_pointMgr.Clear();
+		UpdatePointPoseDisplays();
 		Invalidate();
 	}
 }
@@ -260,6 +273,7 @@ void CcircleeditorMFCDlg::OnMouseMove(UINT nFlags, CPoint ptCursor)
 		m_pointMgr.MovePoint(m_nDragIndex, ptCursor);
 		m_pDrawMgr->UpdateBuffer();
 		Invalidate(FALSE);
+		UpdatePointPoseDisplays();
 	}
 	CDialogEx::OnMouseMove(nFlags, ptCursor);
 }
@@ -326,5 +340,31 @@ LRESULT CcircleeditorMFCDlg::OnRandomUpdate(WPARAM, LPARAM)
 {
 	m_pDrawMgr->UpdateBuffer();
 	Invalidate(FALSE);
+	UpdatePointPoseDisplays();
 	return 0;
+}
+
+void CcircleeditorMFCDlg::UpdatePointPoseDisplays()
+{
+	const std::vector<CPoint>& vecPts = m_pointMgr.GetPoints();
+	int nPtCount = static_cast<int>(vecPts.size());
+	CString strPose;
+
+	if (nPtCount > 0)
+		strPose.Format(_T("(%d, %d)"), vecPts[0].x, vecPts[0].y);
+	else
+		strPose.Empty();
+	m_editPt1Pose.SetWindowTextW(strPose);
+
+	if (nPtCount > 1)
+		strPose.Format(_T("(%d, %d)"), vecPts[1].x, vecPts[1].y);
+	else
+		strPose.Empty();
+	m_editPt2Pose.SetWindowTextW(strPose);
+
+	if (nPtCount > 2)
+		strPose.Format(_T("(%d, %d)"), vecPts[2].x, vecPts[2].y);
+	else
+		strPose.Empty();
+	m_editPt3Pose.SetWindowTextW(strPose);
 }
