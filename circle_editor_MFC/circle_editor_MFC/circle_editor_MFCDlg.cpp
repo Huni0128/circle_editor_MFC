@@ -8,6 +8,8 @@
 #include "circle_editor_MFCDlg.h"
 #include "afxdialogex.h"
 #include <atltime.h>
+#include <chrono>
+#include <iostream>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -266,6 +268,8 @@ void CcircleeditorMFCDlg::OnBnClickedBtnRandom()
 		return;
 	}
 
+	auto t_start = std::chrono::high_resolution_clock::now();
+
 	CRect rcClient;
 	GetClientRect(&rcClient);
 	int width = rcClient.Width();
@@ -284,7 +288,14 @@ void CcircleeditorMFCDlg::OnBnClickedBtnRandom()
 
 	m_pDrawMgr->UpdateBuffer();
 	Invalidate();
+
+	auto t_end = std::chrono::high_resolution_clock::now();
+	std::chrono::duration<double> elapsed = t_end - t_start;
+
+	std::cout << "OnBnClickedBtnRandom 실행 소요 시간: "
+		<< elapsed.count() << "초\n";
 }
+
 
 void CcircleeditorMFCDlg::OnDestroy()
 {
