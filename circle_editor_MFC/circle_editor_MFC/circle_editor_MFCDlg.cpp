@@ -251,8 +251,9 @@ void CcircleeditorMFCDlg::OnMouseMove(UINT nFlags, CPoint ptCursor)
 {
 	if (m_nDragIndex >= 0)
 	{
+		m_pointMgr.MovePoint(m_nDragIndex, ptCursor);
 		m_pDrawMgr->UpdateBuffer();
-		Invalidate();
+		Invalidate(FALSE);
 	}
 	CDialogEx::OnMouseMove(nFlags, ptCursor);
 }
