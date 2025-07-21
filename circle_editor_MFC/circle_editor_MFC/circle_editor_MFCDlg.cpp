@@ -286,6 +286,7 @@ void CcircleeditorMFCDlg::OnBnClickedBtnRandom()
 	}
 
 	GetDlgItem(IDC_BTN_RANDOM)->EnableWindow(FALSE);
+	GetDlgItem(IDC_BTN_RESET)->EnableWindow(FALSE);
 
 	AfxBeginThread([](LPVOID lpParam) -> UINT
 		{
@@ -370,5 +371,6 @@ void CcircleeditorMFCDlg::UpdatePointPoseDisplays()
 LRESULT CcircleeditorMFCDlg::OnRandomFinish(WPARAM wParam, LPARAM lParam)
 {
 	GetDlgItem(IDC_BTN_RANDOM)->EnableWindow(TRUE);
+	GetDlgItem(IDC_BTN_RESET)->EnableWindow(TRUE);
 	return 0;
 }
