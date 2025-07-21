@@ -1,0 +1,60 @@
+#include <string>
+#include <vector>
+#include <iostream>
+
+using namespace std;
+
+vector<int> solution(vector<int> arr, vector<bool> flag) {
+    vector<int> answer;
+
+    for (int i = 0; i < arr.size(); i++) 
+    {
+        if (flag[i]) 
+        {
+            for (int j = 0; j < arr[i] * 2; j++) 
+            {
+                answer.push_back(arr[i]);
+			}
+        }
+        else 
+        {
+            for (int j = 0; j < arr[i]; j++)
+            {
+                if (!answer.empty()) 
+                {
+                    answer.pop_back();
+				}
+            }
+		}
+	}
+    for (int x : answer) 
+    {
+        cout << x << " ";
+	}
+    return answer;
+}
+
+int main() {
+    vector<int> arr;
+    vector<bool> flag;
+    string s;
+
+    while (cin >> s)
+    {
+        if (isdigit(s[0])) 
+        {
+            arr.push_back(stoi(s));
+        }
+
+        else 
+        {
+            flag.push_back(s == "true");
+        }
+
+        if (!arr.empty() && arr.size() == flag.size()) 
+            break;
+    }
+    
+	solution(arr, flag);
+    return 0;
+}
