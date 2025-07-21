@@ -1,0 +1,12 @@
+#include <string> 
+#include <vector> 
+
+using namespace std; 
+
+int solution(int n, int k) 
+{ 
+    int x = n/10; 
+    int y = k - x; 
+    int answer = (n * 12000) + (y * 2000); 
+    return answer; 
+}
