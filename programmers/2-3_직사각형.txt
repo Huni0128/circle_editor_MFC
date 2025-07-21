@@ -1,0 +1,51 @@
+#include <string>
+#include <vector>
+#include <iostream>
+
+using namespace std;
+
+int solution(vector<vector<int>> dots) {
+    int minX = dots[0][0];
+    int maxX = dots[0][0];
+	int minY = dots[0][1];
+	int maxY = dots[0][1];
+
+    for (int i = 0; i < 4; i++)
+    {
+        if (dots[i][0] < minX) 
+        {
+            minX = dots[i][0];
+		}
+
+        if (dots[i][0] > maxX)
+        {
+            maxX = dots[i][0];
+        }
+
+        if (dots[i][1] < minY)
+        {
+            minY = dots[i][1];
+		}
+
+        if (dots[i][1] > maxY)
+        {
+            maxY = dots[i][1];
+		}
+
+    }
+	int answer = (maxX - minX) * (maxY - minY);
+    return answer;
+}
+
+int main() {
+    vector<vector<int>> dots(4, vector<int>(2));
+
+    for (int i = 0; i < 4; i++)
+    {
+		cin >> dots[i][0] >> dots[i][1];
+    }
+
+	cout << solution(dots) << endl;
+
+    return 0;
+}
