@@ -62,8 +62,6 @@ void CcircleeditorMFCDlg::DoDataExchange(CDataExchange* pDX)
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_EDIT_POINT_SIZE, m_editPointSize);
 	DDX_Control(pDX, IDC_EDIT_THICKNESS_SIZE, m_editCircleThickness);
-	DDX_Control(pDX, IDC_EDIT_POINT_SIZE, m_editPointSize);
-	DDX_Control(pDX, IDC_EDIT_THICKNESS_SIZE, m_editCircleThickness);
 	DDX_Control(pDX, IDC_EDIT_POINT1_POSE, m_editPt1Pose);
 	DDX_Control(pDX, IDC_EDIT_POINT2_POSE, m_editPt2Pose);
 	DDX_Control(pDX, IDC_EDIT_POINT3_POSE, m_editPt3Pose);
@@ -81,6 +79,7 @@ BEGIN_MESSAGE_MAP(CcircleeditorMFCDlg, CDialogEx)
 	ON_WM_MOUSEMOVE()
 	ON_BN_CLICKED(IDC_BTN_RANDOM, &CcircleeditorMFCDlg::OnBnClickedBtnRandom)
 	ON_MESSAGE(WM_USER_RANDOM_UPDATE, &CcircleeditorMFCDlg::OnRandomUpdate)
+	ON_MESSAGE(WM_USER_RANDOM_FINISH, &CcircleeditorMFCDlg::OnRandomFinish)
 END_MESSAGE_MAP()
 
 
@@ -286,48 +285,52 @@ void CcircleeditorMFCDlg::OnBnClickedBtnRandom()
 		return;
 	}
 
+	GetDlgItem(IDC_BTN_RANDOM)->EnableWindow(FALSE);
+
 	AfxBeginThread([](LPVOID lpParam) -> UINT
-	{
-		auto pDlg = static_cast<CcircleeditorMFCDlg*>(lpParam);
-		auto tpStartTotal = std::chrono::high_resolution_clock::now();
-		for (int nStep = 0; nStep < 10; ++nStep)
 		{
-			auto tpStartFrame = std::chrono::high_resolution_clock::now();
-
-			CRect rcClient;
-			pDlg->GetClientRect(&rcClient);
-			int nWidth = rcClient.Width();
-			int nHeight = rcClient.Height();
-			int nRadius = pDlg->m_pDrawMgr->GetPointRadius();
-
-			int nMinX = nRadius, nMaxX = max(nRadius, nWidth - nRadius);
-			int nMinY = nRadius, nMaxY = max(nRadius, nHeight - nRadius);
-
-			for (int nIdx = 0; nIdx < 3; ++nIdx)
+			auto pDlg = static_cast<CcircleeditorMFCDlg*>(lpParam);
+			auto tpStartTotal = std::chrono::high_resolution_clock::now();
+			for (int nStep = 0; nStep < 10; ++nStep)
 			{
-				int nX = rand() % (nMaxX - nMinX + 1) + nMinX;
-				int nY = rand() % (nMaxY - nMinY + 1) + nMinY;
-				pDlg->m_pointMgr.MovePoint(nIdx, CPoint(nX, nY));
+				auto tpStartFrame = std::chrono::high_resolution_clock::now();
+
+				CRect rcClient;
+				pDlg->GetClientRect(&rcClient);
+				int nWidth = rcClient.Width();
+				int nHeight = rcClient.Height();
+				int nRadius = pDlg->m_pDrawMgr->GetPointRadius();
+
+				int nMinX = nRadius, nMaxX = max(nRadius, nWidth - nRadius);
+				int nMinY = nRadius, nMaxY = max(nRadius, nHeight - nRadius);
+
+				for (int nIdx = 0; nIdx < 3; ++nIdx)
+				{
+					int nX = rand() % (nMaxX - nMinX + 1) + nMinX;
+					int nY = rand() % (nMaxY - nMinY + 1) + nMinY;
+					pDlg->m_pointMgr.MovePoint(nIdx, CPoint(nX, nY));
+				}
+
+				pDlg->PostMessage(WM_USER_RANDOM_UPDATE);
+
+				auto tpEndFrame = std::chrono::high_resolution_clock::now();
+				double dElapsedSec = std::chrono::duration<double>(tpEndFrame - tpStartFrame).count();
+
+				std::cout << "Random #" << (nStep + 1)
+					<< " 실행 시간: " << std::fixed << std::setprecision(6) << dElapsedSec << "초\n";
+
+				std::this_thread::sleep_for(std::chrono::milliseconds(500));
 			}
 
-			pDlg->PostMessage(WM_USER_RANDOM_UPDATE);
+			auto tpEndTotal = std::chrono::high_resolution_clock::now();
+			double dTotalSec = std::chrono::duration<double>(tpEndTotal - tpStartTotal).count();
 
-			auto tpEndFrame = std::chrono::high_resolution_clock::now();
-			double dElapsedSec = std::chrono::duration<double>(tpEndFrame - tpStartFrame).count();
+			std::cout << "총 실행 시간: " << std::fixed << std::setprecision(6) << dTotalSec << "초\n";
 
-			std::cout << "Random #" << (nStep + 1)
-				<< " 실행 시간: " << std::fixed << std::setprecision(6) << dElapsedSec << "초\n";
+			::PostMessage(pDlg->GetSafeHwnd(), WM_USER_RANDOM_FINISH, 0, 0);
 
-			std::this_thread::sleep_for(std::chrono::milliseconds(500));
-		}
-
-		auto tpEndTotal = std::chrono::high_resolution_clock::now();
-		double dTotalSec = std::chrono::duration<double>(tpEndTotal - tpStartTotal).count();
-
-		std::cout << "총 실행 시간: " << std::fixed << std::setprecision(6) << dTotalSec << "초\n";
-
-		return 0;
-	}, this);
+			return 0;
+		}, this);
 }
 
 void CcircleeditorMFCDlg::OnDestroy()
@@ -346,25 +349,26 @@ LRESULT CcircleeditorMFCDlg::OnRandomUpdate(WPARAM, LPARAM)
 
 void CcircleeditorMFCDlg::UpdatePointPoseDisplays()
 {
-	const std::vector<CPoint>& vecPts = m_pointMgr.GetPoints();
-	int nPtCount = static_cast<int>(vecPts.size());
-	CString strPose;
+    const auto& pts = m_pointMgr.GetPoints();
+    CEdit* edits[3] = { &m_editPt1Pose, &m_editPt2Pose, &m_editPt3Pose };
 
-	if (nPtCount > 0)
-		strPose.Format(_T("(%d, %d)"), vecPts[0].x, vecPts[0].y);
-	else
-		strPose.Empty();
-	m_editPt1Pose.SetWindowTextW(strPose);
+    for (int i = 0; i < 3; ++i)
+    {
+        if (i < (int)pts.size())
+        {
+            CString str;
+            str.Format(_T("(%d, %d)"), pts[i].x, pts[i].y);
+            edits[i]->SetWindowTextW(str);
+        }
+        else
+        {
+            edits[i]->SetWindowTextW(_T(""));
+        }
+    }
+}
 
-	if (nPtCount > 1)
-		strPose.Format(_T("(%d, %d)"), vecPts[1].x, vecPts[1].y);
-	else
-		strPose.Empty();
-	m_editPt2Pose.SetWindowTextW(strPose);
-
-	if (nPtCount > 2)
-		strPose.Format(_T("(%d, %d)"), vecPts[2].x, vecPts[2].y);
-	else
-		strPose.Empty();
-	m_editPt3Pose.SetWindowTextW(strPose);
+LRESULT CcircleeditorMFCDlg::OnRandomFinish(WPARAM wParam, LPARAM lParam)
+{
+	GetDlgItem(IDC_BTN_RANDOM)->EnableWindow(TRUE);
+	return 0;
 }

@@ -9,6 +9,7 @@
 #include <afxwin.h>
 
 #define WM_USER_RANDOM_UPDATE  (WM_USER + 1)
+#define WM_USER_RANDOM_FINISH (WM_USER + 2)
 
 // CcircleeditorMFCDlg 대화 상자
 class CcircleeditorMFCDlg : public CDialogEx
@@ -57,4 +58,5 @@ public:
 	afx_msg void OnDestroy();
 	afx_msg LRESULT OnRandomUpdate(WPARAM wParam, LPARAM lParam);
 	void UpdatePointPoseDisplays();
+	afx_msg LRESULT OnRandomFinish(WPARAM wParam, LPARAM lParam);
 };
