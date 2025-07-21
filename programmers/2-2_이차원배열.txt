@@ -1,0 +1,42 @@
+#include <string>
+#include <vector>
+#include <iostream>
+
+using namespace std;
+
+int solution(vector<vector<int>> board, int k) {
+    int answer = 0;
+    int n = board.size();
+    int m = board[0].size();
+
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < m; j++)
+        {
+            if (i + j <= k)
+            {
+                answer += board[i][j];
+            }
+        }
+    }
+    return answer;
+}
+
+int main() {
+    int n, m, k;
+    cin >> n >> m >> k;
+
+    vector<vector<int>> board(n, vector<int>(m));
+
+    for (int i = 0; i < n; ++i)
+    {
+        for (int j = 0; j < m; ++j)
+        {
+            cin >> board[i][j];
+        }
+    }
+
+    cout << solution(board, k) << "\n";
+
+    return 0;
+}
