@@ -394,3 +394,28 @@ LRESULT CcircleeditorMFCDlg::OnRandomFinish(WPARAM, LPARAM)
     GetDlgItem(IDC_BTN_RESET)->EnableWindow(TRUE);
     return 0;
 }
+
+BOOL CcircleeditorMFCDlg::PreTranslateMessage(MSG* pMsg)
+{
+    // 엔터 키가 눌렸을 때
+    if (pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_RETURN)
+    {
+        // 포커스가 있는 컨트롤의 ID 확인
+        CWnd* pFocus = GetFocus();
+        int id = pFocus ? pFocus->GetDlgCtrlID() : 0;
+
+        // 점 크기 에디트에서 엔터 → 해당 버튼 핸들러 호출
+        if (id == IDC_EDIT_POINT_SIZE)
+        {
+            OnBnClickedBtnPointSize();
+            return TRUE;  // 메시지 소모
+        }
+        // 원 두께 에디트에서 엔터 → 해당 버튼 핸들러 호출
+        else if (id == IDC_EDIT_THICKNESS_SIZE)
+        {
+            OnBnClickedBtnThickness();
+            return TRUE;
+        }
+    }
+    return CDialogEx::PreTranslateMessage(pMsg);
+}

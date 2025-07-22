@@ -59,4 +59,5 @@ public:
 	afx_msg LRESULT OnRandomUpdate(WPARAM wParam, LPARAM lParam);
 	void UpdatePointPoseDisplays();
 	afx_msg LRESULT OnRandomFinish(WPARAM wParam, LPARAM lParam);
+	virtual BOOL PreTranslateMessage(MSG* pMsg) override;
 };
