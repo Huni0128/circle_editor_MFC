@@ -19,9 +19,8 @@ static inline int ComputeDx(int r, int dy) noexcept
     return (sq < 0 ? -1 : static_cast<int>(sqrt((double)sq)));
 }
 
-// 생성자: PointManager 포인터 저장
-DrawManager::DrawManager(PointManager* pMgr) noexcept
-    : m_pPointMgr(pMgr)
+// 생성자: 의존 객체 제거 (PointManager 참조 안함)
+DrawManager::DrawManager() noexcept
 {
 }
 
@@ -44,28 +43,27 @@ void DrawManager::CreateImage(int nWidth, int nHeight, int nBpp) noexcept
 }
 
 // 버퍼 업데이트: 배경 지우고 점 및 외접원 그리기
-void DrawManager::UpdateBuffer() noexcept
+void DrawManager::UpdateBuffer(const std::vector<CPoint>& points) noexcept
 {
     ClearBuffer();  // 기존 내용 초기화
 
-    int nW = m_imgBuffer.GetWidth();
-    int nH = m_imgBuffer.GetHeight();
-    int nPitch = m_imgBuffer.GetPitch();
+    int width = m_imgBuffer.GetWidth();
+    int height = m_imgBuffer.GetHeight();
+    int pitch = m_imgBuffer.GetPitch();
     BYTE* pBuf = static_cast<BYTE*>(m_imgBuffer.GetBits());
 
-    DrawPoints(pBuf, nPitch, nW, nH);
+    DrawPoints(pBuf, pitch, width, height, points);
 
     // 점이 3개일 때만 원 계산 및 링 그리기
-    const auto& pts = m_pPointMgr->GetPoints();
-    if (pts.size() == 3)
+    if (points.size() == 3)
     {
-        auto circ = CircleUtils::Calculate(pts[0], pts[1], pts[2]);
+        auto circ = CircleUtils::Calculate(points[0], points[1], points[2]);
         if (circ.bValid)
         {
             int r = static_cast<int>(circ.fRadius);
             int x0 = circ.ptCenter.x - r;
             int y0 = circ.ptCenter.y - r;
-            DrawCircleRing(pBuf, nPitch, nW, nH, x0, y0, r, m_nThickness, (BYTE)128);
+            DrawCircleRing(pBuf, pitch, width, height, x0, y0, r, m_nThickness, 128);
         }
     }
 }
@@ -81,10 +79,11 @@ void DrawManager::ClearBuffer() noexcept
 }
 
 // 점 그리기: 각 점을 반지름 범위 내에서 채움
-void DrawManager::DrawPoints(BYTE* pBuf, int pitch, int width, int height) noexcept
+void DrawManager::DrawPoints(
+    BYTE* pBuf, int pitch, int width, int height,
+    const std::vector<CPoint>& points) noexcept
 {
-    const auto& pts = m_pPointMgr->GetPoints();
-    for (const auto& pt : pts)
+    for (const auto& pt : points)
     {
         int r = m_nPtRadius;
         int cx = pt.x, cy = pt.y;

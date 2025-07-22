@@ -116,12 +116,12 @@ BOOL CcircleeditorMFCDlg::OnInitDialog()
 
 	srand(static_cast<unsigned>(time(nullptr)));
 
-	m_pDrawMgr = new DrawManager(&m_pointMgr);
+	m_pDrawMgr = new DrawManager();
 
 	CRect rc;
 	GetClientRect(&rc);
 	m_pDrawMgr->CreateImage(rc.Width(), rc.Height(), 8);
-	m_pDrawMgr->UpdateBuffer();
+    m_pDrawMgr->UpdateBuffer(m_pointMgr.GetPoints());
 
 	Invalidate();
 
@@ -179,9 +179,9 @@ void CcircleeditorMFCDlg::OnPaint()
     }
     else
     {
-        CPaintDC dc(this);               // 일반 그리기용 DC 생성
-        m_pDrawMgr->UpdateBuffer();      // 백버퍼 갱신
-        m_pDrawMgr->GetImage().Draw(dc, 0, 0); // 이미지 출력
+        CPaintDC dc(this);                                 // 일반 그리기용 DC 생성
+        m_pDrawMgr->UpdateBuffer(m_pointMgr.GetPoints());  // 백버퍼 갱신
+        m_pDrawMgr->GetImage().Draw(dc, 0, 0);             // 이미지 출력
     }
 }
 
@@ -239,9 +239,9 @@ void CcircleeditorMFCDlg::OnLButtonDown(UINT nFlags, CPoint ptClick)
     {
         // 점이 3개 미만이면 새 점 추가
         m_pointMgr.AddPoint(ptClick);
-        m_pDrawMgr->UpdateBuffer();      // 버퍼 업데이트 후 화면 무효화
+        m_pDrawMgr->UpdateBuffer(m_pointMgr.GetPoints());   // 버퍼 업데이트 후 화면 무효화
         Invalidate();
-        UpdatePointPoseDisplays();      // 좌표 표시 갱신
+        UpdatePointPoseDisplays();                          // 좌표 표시 갱신
     }
 
     CDialogEx::OnLButtonDown(nFlags, ptClick);
@@ -254,9 +254,9 @@ void CcircleeditorMFCDlg::OnMouseMove(UINT nFlags, CPoint ptCursor)
     {
         // 점 이동
         m_pointMgr.MovePoint(m_nDragIndex, ptCursor);
-        m_pDrawMgr->UpdateBuffer();                   // 버퍼 갱신
-        Invalidate(FALSE);                            // 부분 무효화
-        UpdatePointPoseDisplays();                    // 좌표 표시 갱신
+        m_pDrawMgr->UpdateBuffer(m_pointMgr.GetPoints()); // 버퍼 갱신
+        Invalidate(FALSE);                              // 부분 무효화
+        UpdatePointPoseDisplays();                      // 좌표 표시 갱신
     }
     CDialogEx::OnMouseMove(nFlags, ptCursor);
 }
@@ -367,8 +367,7 @@ void CcircleeditorMFCDlg::OnBnClickedBtnRandom()
                 auto tpEndFrame = std::chrono::high_resolution_clock::now();
                 double dElapsedSec = std::chrono::duration<double>(tpEndFrame - tpStartFrame).count();
                 std::cout << "Random #" << (nStep + 1)
-                    << " 실행 시간: " << std::fixed << std::setprecision(6)
-                    << dElapsedSec << "초\n";
+                    << " 실행 시간: " << std::fixed << std::setprecision(6) << dElapsedSec << "초\n";
 
                 std::this_thread::sleep_for(std::chrono::milliseconds(500)); // 프레임 간 지연
             }
@@ -376,8 +375,7 @@ void CcircleeditorMFCDlg::OnBnClickedBtnRandom()
             // 총 실행 시간 출력 후 완료 메시지 전송
             auto tpEndTotal = std::chrono::high_resolution_clock::now();
             double dTotalSec = std::chrono::duration<double>(tpEndTotal - tpStartTotal).count();
-            std::cout << "총 실행 시간: " << std::fixed << std::setprecision(6)
-                << dTotalSec << "초\n";
+            std::cout << "총 실행 시간: " << std::fixed << std::setprecision(6) << dTotalSec << "초\n";
 
             ::PostMessage(pDlg->GetSafeHwnd(), WM_USER_RANDOM_FINISH, 0, 0);
             return 0;
@@ -387,7 +385,7 @@ void CcircleeditorMFCDlg::OnBnClickedBtnRandom()
 // WM_USER_RANDOM_UPDATE 처리: 화면 및 좌표 표시 갱신
 LRESULT CcircleeditorMFCDlg::OnRandomUpdate(WPARAM, LPARAM)
 {
-    m_pDrawMgr->UpdateBuffer();
+    m_pDrawMgr->UpdateBuffer(m_pointMgr.GetPoints());
     Invalidate(FALSE);
     UpdatePointPoseDisplays();
     return 0;

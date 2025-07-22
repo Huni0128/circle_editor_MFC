@@ -1,16 +1,17 @@
 #pragma once
-#include "PointManager.h"
-#include "CircleUtils.h"
+#include <vector>
 #include <atlimage.h>
+#include <atltypes.h>
+#include "CircleUtils.h"
 
 class DrawManager
 {
 public:
-    explicit DrawManager(PointManager* pMgr) noexcept;
+    DrawManager() noexcept;
     ~DrawManager() noexcept = default;
 
     void CreateImage(int nWidth, int nHeight, int nBpp = 8) noexcept;
-    void UpdateBuffer() noexcept;
+    void UpdateBuffer(const std::vector<CPoint>& points) noexcept;
 
     CImage& GetImage() noexcept { return m_imgBuffer; }
 
@@ -21,13 +22,13 @@ public:
     void SetCircleThickness(int nThick) noexcept { m_nThickness = nThick; }
 
 private:
-    void DrawPoints(BYTE* pBuf, int nPitch, int nW, int nH) noexcept;
     void ClearBuffer() noexcept;
+    void DrawPoints(BYTE* pBuf, int pitch, int width, int height, const std::vector<CPoint>& points) noexcept;
     void DrawCircleRing(
-        BYTE* pBuf, int nPitch, int nW, int nH, int nX,
-        int nY, int nR, int nThickness, BYTE rGray) noexcept;
+        BYTE* pBuf, int pitch, int width, int height,
+        int x0, int y0, int r, int thickness, BYTE gray) noexcept;
 
-    PointManager* m_pPointMgr = nullptr;
+private:
     int m_nPtRadius = 5;
     int m_nThickness = 2;
     CImage m_imgBuffer;
