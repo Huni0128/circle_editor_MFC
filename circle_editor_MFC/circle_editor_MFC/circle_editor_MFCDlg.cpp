@@ -192,6 +192,39 @@ HCURSOR CcircleeditorMFCDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+// 엔터 키 입력 처리: 점 크기 및 원 두께 설정
+BOOL CcircleeditorMFCDlg::PreTranslateMessage(MSG* pMsg)
+{
+    // 엔터 키가 눌렸을 때
+    if (pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_RETURN)
+    {
+        // 포커스가 있는 컨트롤의 ID 확인
+        CWnd* pFocus = GetFocus();
+        int id = pFocus ? pFocus->GetDlgCtrlID() : 0;
+
+        // 점 크기 에디트에서 엔터 → 해당 버튼 핸들러 호출
+        if (id == IDC_EDIT_POINT_SIZE)
+        {
+            OnBnClickedBtnPointSize();
+            return TRUE;  // 메시지 소모
+        }
+        // 원 두께 에디트에서 엔터 → 해당 버튼 핸들러 호출
+        else if (id == IDC_EDIT_THICKNESS_SIZE)
+        {
+            OnBnClickedBtnThickness();
+            return TRUE;
+        }
+    }
+    return CDialogEx::PreTranslateMessage(pMsg);
+}
+
+// 다이얼로그 종료 시 자원 정리
+void CcircleeditorMFCDlg::OnDestroy()
+{
+    delete m_pDrawMgr;         // 그리기 매니저 메모리 해제
+    CDialogEx::OnDestroy();
+}
+
 // 마우스 왼쪽 버튼 클릭 처리: 드래그 시작 또는 점 추가
 void CcircleeditorMFCDlg::OnLButtonDown(UINT nFlags, CPoint ptClick)
 {
@@ -212,6 +245,31 @@ void CcircleeditorMFCDlg::OnLButtonDown(UINT nFlags, CPoint ptClick)
     }
 
     CDialogEx::OnLButtonDown(nFlags, ptClick);
+}
+
+// 마우스 이동: 드래그 중이면 점 위치 업데이트
+void CcircleeditorMFCDlg::OnMouseMove(UINT nFlags, CPoint ptCursor)
+{
+    if (m_nDragIndex >= 0)
+    {
+        // 점 이동
+        m_pointMgr.MovePoint(m_nDragIndex, ptCursor);
+        m_pDrawMgr->UpdateBuffer();                   // 버퍼 갱신
+        Invalidate(FALSE);                            // 부분 무효화
+        UpdatePointPoseDisplays();                    // 좌표 표시 갱신
+    }
+    CDialogEx::OnMouseMove(nFlags, ptCursor);
+}
+
+// 마우스 왼쪽 버튼 해제: 드래그 종료
+void CcircleeditorMFCDlg::OnLButtonUp(UINT nFlags, CPoint ptClickUp)
+{
+    if (m_nDragIndex >= 0)
+    {
+        ReleaseCapture();  // 캡처 해제
+        m_nDragIndex = -1; // 드래그 인덱스 초기화
+    }
+    CDialogEx::OnLButtonUp(nFlags, ptClickUp);
 }
 
 // [버튼] 점 크기 설정: 1~30 범위만 허용
@@ -259,30 +317,6 @@ void CcircleeditorMFCDlg::OnBnClickedBtnReset()
         UpdatePointPoseDisplays();     // 좌표 표시 초기화
         Invalidate();                  // 화면 갱신
     }
-}
-
-// 마우스 왼쪽 버튼 해제: 드래그 종료
-void CcircleeditorMFCDlg::OnLButtonUp(UINT nFlags, CPoint ptClickUp)
-{
-    if (m_nDragIndex >= 0)
-    {
-        ReleaseCapture();  // 캡처 해제
-        m_nDragIndex = -1; // 드래그 인덱스 초기화
-    }
-    CDialogEx::OnLButtonUp(nFlags, ptClickUp);
-}
-
-// 마우스 이동: 드래그 중이면 점 위치 업데이트
-void CcircleeditorMFCDlg::OnMouseMove(UINT nFlags, CPoint ptCursor)
-{
-    if (m_nDragIndex >= 0)
-    {
-        m_pointMgr.MovePoint(m_nDragIndex, ptCursor); // 점 이동
-        m_pDrawMgr->UpdateBuffer();                   // 버퍼 갱신
-        Invalidate(FALSE);                            // 부분 무효화
-        UpdatePointPoseDisplays();                    // 좌표 표시 갱신
-    }
-    CDialogEx::OnMouseMove(nFlags, ptCursor);
 }
 
 // [버튼] 랜덤 애니메이션 시작: 3개 점 위치가 필요
@@ -350,19 +384,20 @@ void CcircleeditorMFCDlg::OnBnClickedBtnRandom()
         }, this);
 }
 
-// 다이얼로그 종료 시 자원 정리
-void CcircleeditorMFCDlg::OnDestroy()
-{
-    delete m_pDrawMgr;         // 그리기 매니저 메모리 해제
-    CDialogEx::OnDestroy();
-}
-
 // WM_USER_RANDOM_UPDATE 처리: 화면 및 좌표 표시 갱신
 LRESULT CcircleeditorMFCDlg::OnRandomUpdate(WPARAM, LPARAM)
 {
     m_pDrawMgr->UpdateBuffer();
     Invalidate(FALSE);
     UpdatePointPoseDisplays();
+    return 0;
+}
+
+// WM_USER_RANDOM_FINISH 처리: 버튼 재활성화
+LRESULT CcircleeditorMFCDlg::OnRandomFinish(WPARAM, LPARAM)
+{
+    GetDlgItem(IDC_BTN_RANDOM)->EnableWindow(TRUE);
+    GetDlgItem(IDC_BTN_RESET)->EnableWindow(TRUE);
     return 0;
 }
 
@@ -385,37 +420,4 @@ void CcircleeditorMFCDlg::UpdatePointPoseDisplays()
             edits[i]->SetWindowTextW(_T("")); // 점 없으면 빈 문자열
         }
     }
-}
-
-// WM_USER_RANDOM_FINISH 처리: 버튼 재활성화
-LRESULT CcircleeditorMFCDlg::OnRandomFinish(WPARAM, LPARAM)
-{
-    GetDlgItem(IDC_BTN_RANDOM)->EnableWindow(TRUE);
-    GetDlgItem(IDC_BTN_RESET)->EnableWindow(TRUE);
-    return 0;
-}
-
-BOOL CcircleeditorMFCDlg::PreTranslateMessage(MSG* pMsg)
-{
-    // 엔터 키가 눌렸을 때
-    if (pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_RETURN)
-    {
-        // 포커스가 있는 컨트롤의 ID 확인
-        CWnd* pFocus = GetFocus();
-        int id = pFocus ? pFocus->GetDlgCtrlID() : 0;
-
-        // 점 크기 에디트에서 엔터 → 해당 버튼 핸들러 호출
-        if (id == IDC_EDIT_POINT_SIZE)
-        {
-            OnBnClickedBtnPointSize();
-            return TRUE;  // 메시지 소모
-        }
-        // 원 두께 에디트에서 엔터 → 해당 버튼 핸들러 호출
-        else if (id == IDC_EDIT_THICKNESS_SIZE)
-        {
-            OnBnClickedBtnThickness();
-            return TRUE;
-        }
-    }
-    return CDialogEx::PreTranslateMessage(pMsg);
 }
