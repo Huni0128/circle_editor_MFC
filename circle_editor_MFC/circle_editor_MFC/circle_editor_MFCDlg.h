@@ -6,10 +6,8 @@
 #include "PointManager.h"
 #include "DrawManager.h"
 #include "CircleUtils.h"
+#include "RandomAnimator.h"
 #include <afxwin.h>
-
-#define WM_USER_RANDOM_UPDATE  (WM_USER + 1)
-#define WM_USER_RANDOM_FINISH (WM_USER + 2)
 
 // CcircleeditorMFCDlg 대화 상자
 class CcircleeditorMFCDlg : public CDialogEx
@@ -60,4 +58,5 @@ public:
 	void UpdatePointPoseDisplays();
 	afx_msg LRESULT OnRandomFinish(WPARAM wParam, LPARAM lParam);
 	virtual BOOL PreTranslateMessage(MSG* pMsg) override;
+	RandomAnimator* m_pAnimator = nullptr;
 };

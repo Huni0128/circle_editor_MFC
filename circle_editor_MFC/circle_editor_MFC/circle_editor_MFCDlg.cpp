@@ -7,10 +7,6 @@
 #include "circle_editor_MFC.h"
 #include "circle_editor_MFCDlg.h"
 #include "afxdialogex.h"
-#include <iostream>
-#include <iomanip>
-#include <thread>
-#include <chrono>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -78,8 +74,8 @@ BEGIN_MESSAGE_MAP(CcircleeditorMFCDlg, CDialogEx)
 	ON_WM_LBUTTONUP()
 	ON_WM_MOUSEMOVE()
 	ON_BN_CLICKED(IDC_BTN_RANDOM, &CcircleeditorMFCDlg::OnBnClickedBtnRandom)
-	ON_MESSAGE(WM_USER_RANDOM_UPDATE, &CcircleeditorMFCDlg::OnRandomUpdate)
-	ON_MESSAGE(WM_USER_RANDOM_FINISH, &CcircleeditorMFCDlg::OnRandomFinish)
+    ON_MESSAGE(WM_USER_RANDOM_UPDATE, &CcircleeditorMFCDlg::OnRandomUpdate)
+    ON_MESSAGE(WM_USER_RANDOM_FINISH, &CcircleeditorMFCDlg::OnRandomFinish)
 END_MESSAGE_MAP()
 
 
@@ -222,6 +218,7 @@ BOOL CcircleeditorMFCDlg::PreTranslateMessage(MSG* pMsg)
 void CcircleeditorMFCDlg::OnDestroy()
 {
     delete m_pDrawMgr;         // 그리기 매니저 메모리 해제
+	delete m_pAnimator;        // 애니메이터 메모리 해제
     CDialogEx::OnDestroy();
 }
 
@@ -332,55 +329,11 @@ void CcircleeditorMFCDlg::OnBnClickedBtnRandom()
     GetDlgItem(IDC_BTN_RANDOM)->EnableWindow(FALSE);
     GetDlgItem(IDC_BTN_RESET)->EnableWindow(FALSE);
 
-    // 별도 스레드에서 10회 랜덤 위치 이동 수행
-    AfxBeginThread([](LPVOID lpParam) -> UINT
-        {
-            auto pDlg = static_cast<CcircleeditorMFCDlg*>(lpParam);
-            auto tpStartTotal = std::chrono::high_resolution_clock::now();
-
-            for (int nStep = 0; nStep < 10; ++nStep)
-            {
-                auto tpStartFrame = std::chrono::high_resolution_clock::now();
-
-                // 클라이언트 영역 및 점 반경 가져오기
-                CRect rcClient;
-                pDlg->GetClientRect(&rcClient);
-                int nWidth = rcClient.Width();
-                int nHeight = rcClient.Height();
-                int nRadius = pDlg->m_pDrawMgr->GetPointRadius();
-
-                // 점 위치 랜덤 범위 계산
-                int nMinX = nRadius, nMaxX = max(nRadius, nWidth - nRadius);
-                int nMinY = nRadius, nMaxY = max(nRadius, nHeight - nRadius);
-
-                // 3개 점 위치 랜덤 이동
-                for (int nIdx = 0; nIdx < 3; ++nIdx)
-                {
-                    int nX = rand() % (nMaxX - nMinX + 1) + nMinX;
-                    int nY = rand() % (nMaxY - nMinY + 1) + nMinY;
-                    pDlg->m_pointMgr.MovePoint(nIdx, CPoint(nX, nY));
-                }
-
-                // 메인 스레드에 화면 갱신 메시지 전송
-                pDlg->PostMessage(WM_USER_RANDOM_UPDATE);
-
-                auto tpEndFrame = std::chrono::high_resolution_clock::now();
-                double dElapsedSec = std::chrono::duration<double>(tpEndFrame - tpStartFrame).count();
-                std::cout << "Random #" << (nStep + 1)
-                    << " 실행 시간: " << std::fixed << std::setprecision(6) << dElapsedSec << "초\n";
-
-                std::this_thread::sleep_for(std::chrono::milliseconds(500)); // 프레임 간 지연
-            }
-
-            // 총 실행 시간 출력 후 완료 메시지 전송
-            auto tpEndTotal = std::chrono::high_resolution_clock::now();
-            double dTotalSec = std::chrono::duration<double>(tpEndTotal - tpStartTotal).count();
-            std::cout << "총 실행 시간: " << std::fixed << std::setprecision(6) << dTotalSec << "초\n";
-
-            ::PostMessage(pDlg->GetSafeHwnd(), WM_USER_RANDOM_FINISH, 0, 0);
-            return 0;
-        }, this);
+    // RandomAnimator로 애니메이션 시작
+    m_pAnimator = new RandomAnimator(this, &m_pointMgr, m_pDrawMgr);
+    m_pAnimator->Start();
 }
+
 
 // WM_USER_RANDOM_UPDATE 처리: 화면 및 좌표 표시 갱신
 LRESULT CcircleeditorMFCDlg::OnRandomUpdate(WPARAM, LPARAM)
