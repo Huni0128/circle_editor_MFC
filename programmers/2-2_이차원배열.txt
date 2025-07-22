@@ -1,6 +1,8 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <sstream>
+#include <cctype>
 
 using namespace std;
 
@@ -22,21 +24,45 @@ int solution(vector<vector<int>> board, int k) {
     return answer;
 }
 
-int main() {
-    int n, m, k;
-    cin >> n >> m >> k;
+vector<vector<int>> parseBoard(const string& s) {
+    vector<vector<int>> board;
+    vector<int> row;
+    int num = 0;
+    bool inNumber = false;
 
-    vector<vector<int>> board(n, vector<int>(m));
+    for (char ch : s) {
+        if (isdigit(ch)) {
+            num = num * 10 + (ch - '0');
+            inNumber = true;
+        }
+        else if (inNumber) {
+            row.push_back(num);
+            num = 0;
+            inNumber = false;
+        }
 
-    for (int i = 0; i < n; ++i)
-    {
-        for (int j = 0; j < m; ++j)
-        {
-            cin >> board[i][j];
+        if (ch == ']') {
+            if (!row.empty()) {
+                board.push_back(row);
+                row.clear();
+            }
         }
     }
 
-    cout << solution(board, k) << "\n";
+    return board;
+}
 
+int main() {
+    string input;
+    getline(cin, input);
+
+    size_t lastBracket = input.rfind(']');
+    string boardStr = input.substr(0, lastBracket + 1);
+    string kStr = input.substr(lastBracket + 1);
+    int k = stoi(kStr);
+
+    vector<vector<int>> board = parseBoard(boardStr);
+
+    cout << solution(board, k) << "\n";
     return 0;
 }
