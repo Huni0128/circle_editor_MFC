@@ -1,5 +1,6 @@
 #include <string> 
-#include <vector> 
+#include <vector>
+#include <iostream>
 
 using namespace std; 
 
@@ -9,4 +10,13 @@ int solution(int n, int k)
     int y = k - x; 
     int answer = (n * 12000) + (y * 2000); 
     return answer; 
+}
+
+int main() 
+{ 
+    int n, k;
+    cin >> n >> k;
+    cout << solution(n, k) << "\n";
+    
+    return 0;
 }
